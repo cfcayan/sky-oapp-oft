@@ -33,6 +33,12 @@ interface IGovernanceOAppSender {
      */
     error CannotCallTarget();
 
+
+    /**
+     * @dev Thrown when an invalid governance target is provided
+     */
+    error InvalidGovernanceTarget();
+
     /**
      * @dev Emitted when a governance call is successfully sent to a remote chain
      * @param guid The unique identifier for the LayerZero message
