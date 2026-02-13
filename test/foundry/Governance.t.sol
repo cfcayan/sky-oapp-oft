@@ -252,6 +252,19 @@ contract GovernanceControllerOAppTest is TestHelperOz5WithRevertAssertions {
         assertEq(address(fundsReceiver).balance, 1e10);
     }
 
+    function test_receive_reverts_on_short_payload() public {
+        bytes memory malformedPayload = hex"1234";
+
+        vm.expectRevert(abi.encodeWithSelector(IGovernanceOAppReceiver.InvalidPayloadLength.selector, malformedPayload.length));
+        ILayerZeroEndpointV2(endpoints[bEid]).lzReceive(
+            Origin({ srcEid: aEid, sender: addressToBytes32(address(aGov)), nonce: 1 }),
+            address(bGov),
+            keccak256("malformed"),
+            malformedPayload,
+            bytes("")
+        );
+    }
+
     function test_governed_contract_can_be_zero_address() public {
         aGov.setCanCallTarget(address(this), bEid, addressToBytes32(address(0)), true);
 
