@@ -68,6 +68,8 @@ contract GovernanceOAppReceiver is OAppReceiver, ReentrancyGuard, IGovernanceOAp
         address /*_executor*/,
         bytes calldata /*_extraData*/
     ) internal override nonReentrant {
+        if (_payload.length < 64) revert InvalidPayloadLength(_payload.length);
+
         // Extract the source sender from the first 32 bytes of payload
         bytes32 srcSender = bytes32(_payload[0:32]);
         
