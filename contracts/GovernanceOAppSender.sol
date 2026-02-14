@@ -43,6 +43,7 @@ contract GovernanceOAppSender is OAppSender, OAppOptionsType3, IGovernanceOAppSe
      * @inheritdoc IGovernanceOAppSender
      */
     function setCanCallTarget(address _srcSender, uint32 _dstEid, bytes32 _dstTarget, bool _canCall) external onlyOwner {
+        if (_dstTarget == bytes32(0)) revert InvalidGovernanceTarget();
         if (canCallTarget[_srcSender][_dstEid][_dstTarget] == _canCall) revert CanCallTargetIdempotent();
 
         canCallTarget[_srcSender][_dstEid][_dstTarget] = _canCall;
@@ -66,6 +67,7 @@ contract GovernanceOAppSender is OAppSender, OAppOptionsType3, IGovernanceOAppSe
         MessagingFee calldata _fee,
         address _refundAddress
     ) external payable returns (MessagingReceipt memory msgReceipt) {
+        if (_params.dstTarget == bytes32(0)) revert InvalidGovernanceTarget();
         if (!canCallTarget[msg.sender][_params.dstEid][_params.dstTarget]) revert CannotCallTarget();
 
         (bytes memory message, bytes memory options) = _buildMsgAndOptions(_params);

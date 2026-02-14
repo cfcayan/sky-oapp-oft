@@ -18,6 +18,11 @@ struct MessageOrigin {
  */
 interface IGovernanceOAppReceiver {
     /**
+     * @dev Thrown when the inbound governance payload is shorter than the required header size
+     */
+    error InvalidPayloadLength(uint256 payloadLength);
+
+    /**
      * @dev Thrown when a governance call execution fails on the target contract
      */
     error GovernanceCallFailed();

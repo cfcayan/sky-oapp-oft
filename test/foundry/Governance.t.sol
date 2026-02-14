@@ -252,9 +252,24 @@ contract GovernanceControllerOAppTest is TestHelperOz5WithRevertAssertions {
         assertEq(address(fundsReceiver).balance, 1e10);
     }
 
-    function test_governed_contract_can_be_zero_address() public {
-        aGov.setCanCallTarget(address(this), bEid, addressToBytes32(address(0)), true);
+    function test_receive_reverts_on_short_payload() public {
+        bytes memory malformedPayload = hex"1234";
 
+        vm.expectRevert(abi.encodeWithSelector(IGovernanceOAppReceiver.InvalidPayloadLength.selector, malformedPayload.length));
+        ILayerZeroEndpointV2(endpoints[bEid]).lzReceive(
+            Origin({ srcEid: aEid, sender: addressToBytes32(address(aGov)), nonce: 1 }),
+            address(bGov),
+            keccak256("malformed"),
+            malformedPayload,
+            bytes("")
+        );
+    }
+
+    function test_governed_contract_cannot_be_zero_address() public {
+        vm.expectRevert(IGovernanceOAppSender.InvalidGovernanceTarget.selector);
+        aGov.setCanCallTarget(address(this), bEid, addressToBytes32(address(0)), true);
+    }
+    function test_send_reverts_with_zero_target() public {
         TxParams memory txParams = TxParams({
             dstEid: bEid,
             dstTarget: addressToBytes32(address(0)),
@@ -263,8 +278,8 @@ contract GovernanceControllerOAppTest is TestHelperOz5WithRevertAssertions {
         });
         MessagingFee memory fee = aGov.quoteTx(txParams, false);
 
+        vm.expectRevert(IGovernanceOAppSender.InvalidGovernanceTarget.selector);
         aGov.sendTx{ value: fee.nativeFee }(txParams, fee, address(this));
-
-        verifyAndExecutePackets(bEid, addressToBytes32(address(bGov)));
     }
+
 }
